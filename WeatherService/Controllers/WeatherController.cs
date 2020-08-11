@@ -32,9 +32,9 @@ namespace WeatherService.Controllers
         /// </summary>
         /// <response code="200">List of all weather</response>
         [HttpGet]
-        public string Get()
+        public List<Weather> Get()
         {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(WeatherRepo.GetAll());
+            return WeatherRepo.GetAll();
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace WeatherService.Controllers
         /// <param name="date">Weather for a given date</param>
         [HttpGet]
         [Route("{date}")]
-        public string GetByDate(DateTime date)
+        public List<Weather> GetByDate(DateTime date)
         {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(WeatherRepo.GetByDate(date));
+            return WeatherRepo.GetByDate(date);
         }
 
         /// <summary>
@@ -63,11 +63,11 @@ namespace WeatherService.Controllers
             newWeather.location = JsonSerializer.Deserialize<Model.Location>(values["location"].ToString());
             if (newWeather.temperature.Count() != 24)
                 throw new Exception(newWeather.temperature.Count() + " temperature data points provided. Expected 24.");
-            for(int i = 0; i < newWeather.temperature.Count(); i++)
+            for (int i = 0; i < newWeather.temperature.Count(); i++)
             {
                 newWeather.temperature[i] = (float)(((int)(newWeather.temperature[i] * 10)) / 10.0);
             }
-            bool created= WeatherRepo.Create(newWeather);
+            bool created = WeatherRepo.Create(newWeather);
             if (!created)
                 return BadRequest();
             Weather createdWeather = WeatherRepo.GetById(newWeather.id);
@@ -79,24 +79,22 @@ namespace WeatherService.Controllers
                 return BadRequest();
         }
 
-/*        /// <summary>
+        /// <summary>
         /// Update a Weather
         /// </summary>
-        /// <param name="id">Id of the Weather to update</param>
-        /// <param name="WeatherDto">Weather data</param>
+        /// <param name="updatedWeather"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut]
-        [Route("{id}")]
-        public IActionResult Update(int id, [FromBody] Dto.UpdateWeather WeatherDto)
+        public IActionResult Update(Weather updatedWeather)
         {
-            var Weather = WeatherRepo.GetById(id);
-            Mapper.Map(WeatherDto, Weather);
-            WeatherRepo.Update(Weather);
-            return Ok();
+            smallRecord updated = WeatherRepo.UpdateByLocation(updatedWeather);
+            if (updated.id != -1)
+                return Ok(updated);
+            return BadRequest();
         }
-*/
+
         /// <summary>
         /// Clear all weather data
         /// </summary>
@@ -109,14 +107,14 @@ namespace WeatherService.Controllers
             return Ok();
         }
 
- /*       /// <summary>
-        /// Example of an exception handling
-        /// </summary>
-        [HttpGet("ThrowAnException")]
-        public IActionResult ThrowAnException()
-        {
-            throw new Exception("Example exception");
-        }
-*/
+        /*       /// <summary>
+               /// Example of an exception handling
+               /// </summary>
+               [HttpGet("ThrowAnException")]
+               public IActionResult ThrowAnException()
+               {
+                   throw new Exception("Example exception");
+               }
+       */
     }
 }
