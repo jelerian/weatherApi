@@ -23,7 +23,7 @@ namespace WeatherService.Model
             get; set;
         }
 
-        public Location location;
+        public Location location { get; set; }
         public float[] temperature { get; set; }
 
     }
